@@ -20,12 +20,12 @@ function draw () {
     fill(200)
     if (GAME_STATE === 'waiting') {
         players.draw()
-        if (pressed_keys.has('Alt')) {
+        if (pressed_keys.has(' ')) {
             GAME_STATE = 'playing'
         }
     } else if (GAME_STATE === 'over') {
         players.draw()
-        if (pressed_keys.has('Alt')) GAME_STATE = 'reset'
+        if (pressed_keys.has(' ')) GAME_STATE = 'reset'
     } else if (GAME_STATE === 'playing') {
         players.update()
     } else if (GAME_STATE === 'reset') {
@@ -106,7 +106,7 @@ class PlayerManager {
     }
 
     onKeyPress (key) {
-        if (this.taken_controls.has(key) || key.length > 1) return
+        if (this.taken_controls.has(key) || key.length > 1 || key === ' ') return
         this.taken_controls.add(key)
         
         const last_player = this.players[this.players.length - 1]
@@ -142,14 +142,16 @@ class Player extends Entity {
     controls;
     constructor(args){
         super(args);
-        this.rotation_speed = args.rotation_speed ?? PI / 20;
+        this.rotation_speed = args.rotation_speed ?? PI / 30;
         this.controls = args.controls ?? {
             left: 0,
             right: 0
         };
         this.speed = createVector(0, -1)
-        this.speed.mult(args.scalar ?? 2)
+        this.speed.mult(args.scalar ?? 1.2)
         this.color = args.color ?? color(200, 100, 100)
+
+        this.shape_multi = 2.5
     }
     update() {
         const { right , left  } = this.controls;
@@ -168,7 +170,7 @@ class Player extends Entity {
         if (this.position.y < PADDING) this.position.y = height - PADDING
 
         let ahead_position = createVector(this.position.x, this.position.y)
-        ahead_position.add(this.speed.x * 3, this.speed.y * 3)
+        ahead_position.add(this.speed.x * (this.shape_multi * 1.5), this.speed.y * (this.shape_multi * 1.5))
 
         const pixel_levels = getPixelAt(ahead_position)
         const { levels } = color(0, 0, 0)
@@ -187,21 +189,12 @@ class Player extends Entity {
         fill(this.death_color ?? this.color);
         translate(x, y);
         rotate(this.rotation);
-
-        // triangle(-4, -3, 0, 8, 4, -3);
-        // fill(0)
-        // rectMode(CENTER)
-        // rect(0, 0, 2, 15)
         
-        beginShape(TESS)
-        const shape_multi = 2
-        vertex(shape_multi, 0)
-        vertex(shape_multi, 3 * shape_multi)
-        vertex(2 * shape_multi, -shape_multi)
-        vertex(-2 * shape_multi, -shape_multi)
-        vertex(-shape_multi, 3 * shape_multi)
-        vertex(-shape_multi, 0)
-        endShape(CLOSE)
+        const sm = this.shape_multi
+
+        triangle(-.5 * sm, -sm, -1.5 * sm, -sm, -.5 * sm, 1.5 * sm)
+        triangle( .5 * sm, -sm,  1.5 * sm, -sm,  .5 * sm, 1.5 * sm)
+
         pop();
     }
     rotate(rot_orientation) {
