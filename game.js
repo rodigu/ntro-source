@@ -13,6 +13,7 @@ function setup () {
     mid.height = (height) / 2
     noStroke()
     players = new PlayerManager()
+    pixelDensity(1)
 }
 
 function draw () {
